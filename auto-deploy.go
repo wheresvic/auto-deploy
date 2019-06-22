@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	log.Print("Starting radiology-monitor")
+	log.Print("Starting auto-deploy")
 	rand.Seed(time.Now().UnixNano())
 
 	adVersion := adversion.GetCurrentVersion()

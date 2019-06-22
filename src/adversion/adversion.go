@@ -4,7 +4,7 @@ import "runtime"
 
 // please maintain line numbers here for proper versioning
 const version = "1.0.0"
-const lastUpdated = 1559569065
+const lastUpdated = 1561233534
 
 // AdVersion ...
 type AdVersion struct {
