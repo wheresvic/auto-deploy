@@ -1,6 +1,6 @@
 {
   "name": "auto-deploy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Auto-deploy is a web application written in Go that facilitates deployment via git web hooks.",
   "main": "index.js",
   "scripts": {

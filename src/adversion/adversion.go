@@ -3,8 +3,8 @@ package adversion
 import "runtime"
 
 // please maintain line numbers here for proper versioning
-const version = "1.0.0"
-const lastUpdated = 1561233534
+const version = "1.0.1"
+const lastUpdated = 1561233615
 
 // AdVersion ...
 type AdVersion struct {
