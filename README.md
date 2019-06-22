@@ -1,8 +1,24 @@
 # auto-deploy
 
-Auto-deploy is a web application written in Go that facilitates deployment via git web hooks. Given a configuration file that contains git repository details, auto-deploy creates and listens on custom urls that can be called by the git repository management system (github, gitlab, etc). Upon invocation of the web hook, a script is executed (as defined in the configuration), which can do anything but is generally used to update the project repository and run build steps.
+Auto-deploy is a web application written in Go that facilitates deployment via git web hooks.
+
+Given a configuration file that contains git repository details, auto-deploy creates and listens on custom urls that can be called by the git repository management system (github, gitlab, etc). Upon invocation of the web hook, a script is executed (as defined in the configuration). See the installation section for an example configuration and deployment script.
 
 ## Installation
+
+### `config.json`
+
+```json
+
+```
+
+### sample `deploy.sh`
+
+Note that this deployment script assumes that the project git repository is also cloned on the production server.
+
+```sh
+
+```
 
 ## Development
 
