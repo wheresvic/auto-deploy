@@ -1,9 +1,25 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"math/rand"
+	"time"
+
+	"github.com/wheresvic/auto-deploy/src/adconfiguration"
+	"github.com/wheresvic/auto-deploy/src/adserver"
+	"github.com/wheresvic/auto-deploy/src/adversion"
 )
 
 func main() {
-	fmt.Println("Hello world!")
+	log.Print("Starting radiology-monitor")
+	rand.Seed(time.Now().UnixNano())
+
+	adVersion := adversion.GetCurrentVersion()
+	log.Print(adVersion)
+	initConfig, err := adconfiguration.LoadAndSetConfiguration("./config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	adserver.InitServer(initConfig, adVersion)
 }

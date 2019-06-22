@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "before:init": "make test",
+    "before:release": ["sed -i '6s/.*/const version = \"${version}\"/' src/adversion/adversion.go && dt=$(perl -e 'print time') && sed -i '7s/.*/const lastUpdated = '$dt'/' src/adversion/adversion.go", "git add src/adversion/adversion.go", "git commit -m 'c update timestamp'"],
+    "after:release": "git describe --abbrev=0 --tags"
+  },
+  "git": {
+    "addUntrackedFiles": true
+  },
+  "npm": {
+    "publish": false
+  },
+  "github": {
+    "release": false
+  },
+  "gitlab": {
+    "release": false
+  }
+}
