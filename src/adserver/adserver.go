@@ -41,6 +41,24 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 		return nil
 	})))
 
+	for _, project := range initConfig.Projects {
+		route := "/webhooks/" + project.ProjectSlug
+
+		log.Printf("%+v, %s", project, route)
+
+		routerAPI.HandleFunc(route, wrapAPIHandler(apiHandler(func(w http.ResponseWriter, r *http.Request) *APIError {
+			result, err := json.Marshal(project)
+			jsonAPIError := getAPIError(err)
+			if jsonAPIError != nil {
+				return jsonAPIError
+			}
+			fmt.Fprintf(w, string(result))
+			return nil
+		})))
+	}
+
+	log.Printf("%+v", routerAPI)
+
 	log.Println("Server listening on " + port)
 	// log.Fatal(http.ListenAndServe(":"+port, nil))
 	log.Fatal(http.ListenAndServe(":"+port, r))
