@@ -1,0 +1,13 @@
+{
+  "Server": {
+    "HTTPPort": 9111
+  },
+  "Projects": [
+    {
+      "ProjectSlug": "basic-blockchain",
+      "ProjectRoot": "/home/user/git/basic-blockchain/",
+      "ProjectScript": "/home/user/git/basic-blockchain/scripts/deploy.sh",
+      "SCMServiceType": "github" // one of 'github', '' or 'gitlab'
+    }
+  ]
+}

@@ -22,6 +22,7 @@ type AdProjectConfiguration struct {
 	ProjectSlug   string
 	ProjectRoot   string
 	ProjectScript string
+	SCMServiceType string
 }
 
 // LoadAndSetConfiguration ...

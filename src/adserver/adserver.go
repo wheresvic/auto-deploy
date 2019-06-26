@@ -42,11 +42,46 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 	})))
 
 	for _, project := range initConfig.Projects {
+
+		// TODO: check for errors here
+
 		route := "/webhooks/" + project.ProjectSlug
 
+		if project.SCMServiceType != "" {
+			route += "/" + project.SCMServiceType
+		}
+		
 		log.Printf("%+v, %s", project, route)
 
 		routerAPI.HandleFunc(route, wrapAPIHandler(apiHandler(func(w http.ResponseWriter, r *http.Request) *APIError {
+			
+			var request interface{}
+			err1 := json.NewDecoder(r.Body).Decode(&request)
+			decodeJSONRequestBodyAPIError := getAPIError(err1)
+			if decodeJSONRequestBodyAPIError != nil {
+					return decodeJSONRequestBodyAPIError
+			}
+
+			s, err2 := json.MarshalIndent(request, "", "\t");
+			encodeJSONRequestBodyAPIError := getAPIError(err2)
+			if encodeJSONRequestBodyAPIError != nil {
+				return encodeJSONRequestBodyAPIError
+			}
+
+			// log.Printf("%+v", *request);
+			log.Println(string(s))
+
+			requestStrings := request.(map[string]interface{})
+			
+			if project.SCMServiceType == "github" {
+				log.Println(requestStrings["ref"].(string))
+			}
+			
+			// TODO: execute script and return results
+
+			return nil
+			
+			/*
 			result, err := json.Marshal(project)
 			jsonAPIError := getAPIError(err)
 			if jsonAPIError != nil {
@@ -54,10 +89,17 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 			}
 			fmt.Fprintf(w, string(result))
 			return nil
+			*/
 		})))
 	}
 
-	log.Printf("%+v", routerAPI)
+	
+
+	fs := http.FileServer(http.Dir("public"))
+	r.PathPrefix("/").Handler(fs)
+	// r.Handle("/", fs)
+
+	// log.Printf("%+v", routerAPI)
 
 	log.Println("Server listening on " + port)
 	// log.Fatal(http.ListenAndServe(":"+port, nil))
