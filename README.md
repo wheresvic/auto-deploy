@@ -36,6 +36,12 @@ See `Makefile` for more options.
 
 To get a development server up and running, we require ag (`sudo apt install silversearcher-ag`) and entr ([http://eradman.com/entrproject/](http://eradman.com/entrproject/)). Run `run-dev.sh` from the root folder to start a nodemon like process that restarts itself if any changes are detected to go code.
 
+### Testing Webhooks
+
+The current webhook api is available under `/api/webhooks/:project-slug/:scm-type`. 
+
+Note you can use [serveo.net](https://serveo.net) to obtain a public url which can be used for testing webhooks, e.g.: `ssh -R 80:localhost:9111 serveo.net` where `9111` is the configured port number. The final url will then look something like: `https://optimus.serveo.net/api/webhooks/basic-blockchain/github`.
+
 ### Managing dependencies
 
 Dependencies are stored under `$GOPATH/pkg/mod`.
