@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os/exec"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -17,6 +18,12 @@ type APIError struct {
 	Error        error
 	ErrorMessage string
 	Code         int
+}
+
+// ScriptResult ...
+type ScriptResult struct {
+	OutputSuccess string
+	OutputError   string
 }
 
 // InitServer ...
@@ -71,11 +78,35 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 			// log.Printf("%+v", *request);
 			log.Println(string(s))
 
-			// requestStrings := request.(map[string]interface{})
+			projectCommand := exec.Command(project.ProjectScript)
 
-			if project.SCMServiceType == "github" {
-				// log.Println(requestStrings["ref"].(string))
+			projectCommandResult := ScriptResult{}
+
+			projectCommandOutput, err := projectCommand.Output()
+			if err != nil {
+				projectCommandResult.OutputError = err.Error()
+			} else {
+				projectCommandResult.OutputSuccess = string(projectCommandOutput)
 			}
+
+			response, err3 := json.MarshalIndent(projectCommandResult, "", "\t")
+			encodeJSONProcessCommandResultError := getAPIError(err3)
+			if encodeJSONProcessCommandResultError != nil {
+				return encodeJSONProcessCommandResultError
+			}
+
+			_, writeResponseError := w.Write(response)
+			if writeResponseError != nil {
+				log.Fatal(writeResponseError)
+			}
+
+			/*
+				requestStrings := request.(map[string]interface{})
+
+				if project.SCMServiceType == "github" {
+					log.Println(requestStrings["ref"].(string))
+				}
+			*/
 
 			// TODO: execute script and return results
 
