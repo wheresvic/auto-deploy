@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os/exec"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -17,6 +18,12 @@ type APIError struct {
 	Error        error
 	ErrorMessage string
 	Code         int
+}
+
+// ScriptResult ...
+type ScriptResult struct {
+	OutputSuccess string
+	OutputError   string
 }
 
 // InitServer ...
@@ -50,19 +57,19 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 		if project.SCMServiceType != "" {
 			route += "/" + project.SCMServiceType
 		}
-		
+
 		log.Printf("%+v, %s", project, route)
 
 		routerAPI.HandleFunc(route, wrapAPIHandler(apiHandler(func(w http.ResponseWriter, r *http.Request) *APIError {
-			
+
 			var request interface{}
 			err1 := json.NewDecoder(r.Body).Decode(&request)
 			decodeJSONRequestBodyAPIError := getAPIError(err1)
 			if decodeJSONRequestBodyAPIError != nil {
-					return decodeJSONRequestBodyAPIError
+				return decodeJSONRequestBodyAPIError
 			}
 
-			s, err2 := json.MarshalIndent(request, "", "\t");
+			s, err2 := json.MarshalIndent(request, "", "\t")
 			encodeJSONRequestBodyAPIError := getAPIError(err2)
 			if encodeJSONRequestBodyAPIError != nil {
 				return encodeJSONRequestBodyAPIError
@@ -71,29 +78,51 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 			// log.Printf("%+v", *request);
 			log.Println(string(s))
 
-			requestStrings := request.(map[string]interface{})
-			
-			if project.SCMServiceType == "github" {
-				log.Println(requestStrings["ref"].(string))
+			projectCommand := exec.Command(project.ProjectScript)
+
+			projectCommandResult := ScriptResult{}
+
+			projectCommandOutput, err := projectCommand.Output()
+			if err != nil {
+				projectCommandResult.OutputError = err.Error()
+			} else {
+				projectCommandResult.OutputSuccess = string(projectCommandOutput)
 			}
-			
+
+			response, err3 := json.MarshalIndent(projectCommandResult, "", "\t")
+			encodeJSONProcessCommandResultError := getAPIError(err3)
+			if encodeJSONProcessCommandResultError != nil {
+				return encodeJSONProcessCommandResultError
+			}
+
+			_, writeResponseError := w.Write(response)
+			if writeResponseError != nil {
+				log.Fatal(writeResponseError)
+			}
+
+			/*
+				requestStrings := request.(map[string]interface{})
+
+				if project.SCMServiceType == "github" {
+					log.Println(requestStrings["ref"].(string))
+				}
+			*/
+
 			// TODO: execute script and return results
 
 			return nil
-			
+
 			/*
-			result, err := json.Marshal(project)
-			jsonAPIError := getAPIError(err)
-			if jsonAPIError != nil {
-				return jsonAPIError
-			}
-			fmt.Fprintf(w, string(result))
-			return nil
+				result, err := json.Marshal(project)
+				jsonAPIError := getAPIError(err)
+				if jsonAPIError != nil {
+					return jsonAPIError
+				}
+				fmt.Fprintf(w, string(result))
+				return nil
 			*/
 		})))
 	}
-
-	
 
 	fs := http.FileServer(http.Dir("public"))
 	r.PathPrefix("/").Handler(fs)
