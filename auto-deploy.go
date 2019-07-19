@@ -21,5 +21,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	adserver.InitServer(initConfig, adVersion)
+	server := adserver.InitServer(initConfig, adVersion)
+	adserver.Start(server, initConfig.Server.HTTPPort)
 }

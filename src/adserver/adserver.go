@@ -27,7 +27,7 @@ type ScriptResult struct {
 }
 
 // InitServer ...
-func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion.AdVersion) {
+func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion.AdVersion) *http.Server {
 
 	port := strconv.Itoa(initConfig.Server.HTTPPort)
 
@@ -63,11 +63,14 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 		routerAPI.HandleFunc(route, wrapAPIHandler(apiHandler(func(w http.ResponseWriter, r *http.Request) *APIError {
 
 			var request interface{}
+			// TODO: for a GET request this here is EOF
 			err1 := json.NewDecoder(r.Body).Decode(&request)
 			decodeJSONRequestBodyAPIError := getAPIError(err1)
 			if decodeJSONRequestBodyAPIError != nil {
 				return decodeJSONRequestBodyAPIError
 			}
+
+			log.Println("a")
 
 			s, err2 := json.MarshalIndent(request, "", "\t")
 			encodeJSONRequestBodyAPIError := getAPIError(err2)
@@ -130,9 +133,23 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 
 	// log.Printf("%+v", routerAPI)
 
-	log.Println("Server listening on " + port)
+	server := &http.Server{Addr: ":" + port, Handler: r}
+
+	// log.Println("Server listening on " + port)
 	// log.Fatal(http.ListenAndServe(":"+port, nil))
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	// log.Fatal(http.ListenAndServe(":"+port, r))
+
+	return server
+}
+
+// Start ...
+func Start(server *http.Server, port int) {
+	log.Println("Server listening on " + strconv.Itoa(port))
+
+	// returns ErrServerClosed on graceful close
+	if err := server.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatalf("ListenAndServe(): %s", err)
+	}
 }
 
 func getAPIError(err error) *APIError {
