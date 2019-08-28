@@ -1,11 +1,8 @@
 package adserver
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"os/exec"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -20,16 +17,24 @@ type APIError struct {
 	Code         int
 }
 
-// ScriptResult ...
-type ScriptResult struct {
-	OutputSuccess string
-	OutputError   string
-}
-
 // InitServer ...
 func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion.AdVersion) *http.Server {
 
 	port := strconv.Itoa(initConfig.Server.HTTPPort)
+
+	r := getRouter(initConfig, adVersion)
+
+	server := &http.Server{Addr: ":" + port, Handler: r}
+
+	// log.Println("Server listening on " + port)
+	// log.Fatal(http.ListenAndServe(":"+port, nil))
+	// log.Fatal(http.ListenAndServe(":"+port, r))
+
+	return server
+}
+
+// getRouter ...
+func getRouter(initConfig *adconfiguration.AdConfiguration, adVersion adversion.AdVersion) *mux.Router {
 
 	r := mux.NewRouter()
 
@@ -61,95 +66,7 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 
 	// log.Printf("%+v", routerAPI)
 
-	server := &http.Server{Addr: ":" + port, Handler: r}
-
-	// log.Println("Server listening on " + port)
-	// log.Fatal(http.ListenAndServe(":"+port, nil))
-	// log.Fatal(http.ListenAndServe(":"+port, r))
-
-	return server
-}
-
-func apiHandlerVersion(adVersion adversion.AdVersion) func(w http.ResponseWriter, r *http.Request) *APIError {
-
-	return func(w http.ResponseWriter, r *http.Request) *APIError {
-		result, err := json.Marshal(adVersion)
-		jsonAPIError := getAPIError(err)
-		if jsonAPIError != nil {
-			return jsonAPIError
-		}
-		fmt.Fprintf(w, string(result))
-		return nil
-	}
-
-}
-
-func apiHandlerProjectSlug(project adconfiguration.AdProjectConfiguration) func(w http.ResponseWriter, r *http.Request) *APIError {
-
-	return func(w http.ResponseWriter, r *http.Request) *APIError {
-		var request interface{}
-		// TODO: for a GET request this here is EOF
-		err1 := json.NewDecoder(r.Body).Decode(&request)
-		decodeJSONRequestBodyAPIError := getAPIError(err1)
-		if decodeJSONRequestBodyAPIError != nil {
-			return decodeJSONRequestBodyAPIError
-		}
-
-		log.Println("a")
-
-		s, err2 := json.MarshalIndent(request, "", "\t")
-		encodeJSONRequestBodyAPIError := getAPIError(err2)
-		if encodeJSONRequestBodyAPIError != nil {
-			return encodeJSONRequestBodyAPIError
-		}
-
-		// log.Printf("%+v", *request);
-		log.Println(string(s))
-
-		projectCommand := exec.Command(project.ProjectScript)
-
-		projectCommandResult := ScriptResult{}
-
-		projectCommandOutput, err := projectCommand.Output()
-		if err != nil {
-			projectCommandResult.OutputError = err.Error()
-		} else {
-			projectCommandResult.OutputSuccess = string(projectCommandOutput)
-		}
-
-		response, err3 := json.MarshalIndent(projectCommandResult, "", "\t")
-		encodeJSONProcessCommandResultError := getAPIError(err3)
-		if encodeJSONProcessCommandResultError != nil {
-			return encodeJSONProcessCommandResultError
-		}
-
-		_, writeResponseError := w.Write(response)
-		if writeResponseError != nil {
-			log.Fatal(writeResponseError)
-		}
-
-		/*
-			requestStrings := request.(map[string]interface{})
-
-			if project.SCMServiceType == "github" {
-				log.Println(requestStrings["ref"].(string))
-			}
-		*/
-
-		// TODO: execute script and return results
-
-		return nil
-
-		/*
-			result, err := json.Marshal(project)
-			jsonAPIError := getAPIError(err)
-			if jsonAPIError != nil {
-				return jsonAPIError
-			}
-			fmt.Fprintf(w, string(result))
-			return nil
-		*/
-	}
+	return r
 }
 
 // Start ...

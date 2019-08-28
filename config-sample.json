@@ -5,8 +5,8 @@
   "Projects": [
     {
       "ProjectSlug": "cool-project",
-      "ProjectRoot": "/home/user/fancypants/cool-project/",
-      "ProjectScript": "/home/user/fancypants/cool-project/scripts/deploy.sh",
+      "ProjectRoot": "/var/tmp/dev/cool-project/",
+      "ProjectScript": "/var/tmp/dev/cool-project/deploy.sh",
       "SCMServiceType": "github"
     }
   ]
