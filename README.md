@@ -2,11 +2,17 @@
 
 Auto-deploy is a web application written in Go that facilitates deployment via git web hooks.
 
-Given a configuration file that contains git repository details, auto-deploy creates and listens on custom urls that can be called by the git repository management system (github, gitlab, etc). Upon invocation of the web hook, a script is executed (as defined in the configuration). See the installation section for an example configuration and deployment script.
+Given a configuration file that contains project root folders and scripts, auto-deploy creates custom urls (web hooks). These web hooks can be configured to be called by any git repository management system (github, gitlab, etc). Upon invocation of the web hook, the projects deployment script is executed (as defined in the configuration).
+
+Note that the deployment script is something that is provided by you and is thus not restricted to doing deployment, it can do whatever you'd like it to do. Auto-deploy can be thought of as a poor man's continuous deployment (CD) tool and was, in fact created in order to not have to run a heavy CI/CD installation in order to be able to use web hooks.
+
+See the installation section for an example configuration and deployment script.
 
 ## Installation
 
-### `config.json`
+Installation is as simple as compiling the binary (`auto-deploy.exec`) by running `make build` in the root folder. Thereafter either copy `config-sample.json` to `config.json` and update the contents as required before executing the binary.
+
+### `sample-config.json`
 
 ```json
 
@@ -38,7 +44,7 @@ To get a development server up and running, we require ag (`sudo apt install sil
 
 ### Testing Webhooks
 
-The current webhook api is available under `/api/webhooks/:project-slug/:scm-type`. 
+The current webhook api is available under `/api/webhooks/:project-slug/:scm-type`.
 
 Note you can use [serveo.net](https://serveo.net) to obtain a public url which can be used for testing webhooks, e.g.: `ssh -R 80:localhost:9111 serveo.net` where `9111` is the configured port number. The final url will then look something like: `https://optimus.serveo.net/api/webhooks/basic-blockchain/github`.
 
