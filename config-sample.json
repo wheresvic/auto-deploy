@@ -4,10 +4,10 @@
   },
   "Projects": [
     {
-      "ProjectSlug": "basic-blockchain",
-      "ProjectRoot": "/home/user/git/basic-blockchain/",
-      "ProjectScript": "/home/user/git/basic-blockchain/scripts/deploy.sh",
-      "SCMServiceType": "github" // one of 'github', '' or 'gitlab'
+      "ProjectSlug": "cool-project",
+      "ProjectRoot": "/home/user/fancypants/cool-project/",
+      "ProjectScript": "/home/user/fancypants/cool-project/scripts/deploy.sh",
+      "SCMServiceType": "github"
     }
   ]
 }
