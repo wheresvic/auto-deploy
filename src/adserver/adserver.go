@@ -38,7 +38,7 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 	routerAPI.Use(corsMiddleware)
 
 	// api
-	routerAPI.HandleFunc("/version", wrapAPIHandler(apiHandler(getApiHandlerVersion(adVersion))))
+	routerAPI.HandleFunc("/version", wrapAPIHandler(apiHandler(apiHandlerVersion(adVersion))))
 
 	for _, project := range initConfig.Projects {
 
@@ -52,7 +52,7 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 
 		log.Printf("%+v, %s", project, route)
 
-		routerAPI.HandleFunc(route, wrapAPIHandler(apiHandler(getApiHandlerProjectSlug(project))))
+		routerAPI.HandleFunc(route, wrapAPIHandler(apiHandler(apiHandlerProjectSlug(project))))
 	}
 
 	fs := http.FileServer(http.Dir("public"))
@@ -70,7 +70,7 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 	return server
 }
 
-func getApiHandlerVersion(adVersion adversion.AdVersion) func(w http.ResponseWriter, r *http.Request) *APIError {
+func apiHandlerVersion(adVersion adversion.AdVersion) func(w http.ResponseWriter, r *http.Request) *APIError {
 
 	return func(w http.ResponseWriter, r *http.Request) *APIError {
 		result, err := json.Marshal(adVersion)
@@ -84,7 +84,7 @@ func getApiHandlerVersion(adVersion adversion.AdVersion) func(w http.ResponseWri
 
 }
 
-func getApiHandlerProjectSlug(project adconfiguration.AdProjectConfiguration) func(w http.ResponseWriter, r *http.Request) *APIError {
+func apiHandlerProjectSlug(project adconfiguration.AdProjectConfiguration) func(w http.ResponseWriter, r *http.Request) *APIError {
 
 	return func(w http.ResponseWriter, r *http.Request) *APIError {
 		var request interface{}

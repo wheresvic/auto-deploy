@@ -17,11 +17,11 @@ type AdConfiguration struct {
 	Projects []AdProjectConfiguration
 }
 
-// AdProjectConfiguration
+// AdProjectConfiguration ...
 type AdProjectConfiguration struct {
-	ProjectSlug   string
-	ProjectRoot   string
-	ProjectScript string
+	ProjectSlug    string
+	ProjectRoot    string
+	ProjectScript  string
 	SCMServiceType string
 }
 
