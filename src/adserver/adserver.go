@@ -38,15 +38,7 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 	routerAPI.Use(corsMiddleware)
 
 	// api
-	routerAPI.HandleFunc("/version", wrapAPIHandler(apiHandler(func(w http.ResponseWriter, r *http.Request) *APIError {
-		result, err := json.Marshal(adVersion)
-		jsonAPIError := getAPIError(err)
-		if jsonAPIError != nil {
-			return jsonAPIError
-		}
-		fmt.Fprintf(w, string(result))
-		return nil
-	})))
+	routerAPI.HandleFunc("/version", wrapAPIHandler(apiHandler(getApiHandlerVersion(adVersion))))
 
 	for _, project := range initConfig.Projects {
 
@@ -60,71 +52,7 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 
 		log.Printf("%+v, %s", project, route)
 
-		routerAPI.HandleFunc(route, wrapAPIHandler(apiHandler(func(w http.ResponseWriter, r *http.Request) *APIError {
-
-			var request interface{}
-			// TODO: for a GET request this here is EOF
-			err1 := json.NewDecoder(r.Body).Decode(&request)
-			decodeJSONRequestBodyAPIError := getAPIError(err1)
-			if decodeJSONRequestBodyAPIError != nil {
-				return decodeJSONRequestBodyAPIError
-			}
-
-			log.Println("a")
-
-			s, err2 := json.MarshalIndent(request, "", "\t")
-			encodeJSONRequestBodyAPIError := getAPIError(err2)
-			if encodeJSONRequestBodyAPIError != nil {
-				return encodeJSONRequestBodyAPIError
-			}
-
-			// log.Printf("%+v", *request);
-			log.Println(string(s))
-
-			projectCommand := exec.Command(project.ProjectScript)
-
-			projectCommandResult := ScriptResult{}
-
-			projectCommandOutput, err := projectCommand.Output()
-			if err != nil {
-				projectCommandResult.OutputError = err.Error()
-			} else {
-				projectCommandResult.OutputSuccess = string(projectCommandOutput)
-			}
-
-			response, err3 := json.MarshalIndent(projectCommandResult, "", "\t")
-			encodeJSONProcessCommandResultError := getAPIError(err3)
-			if encodeJSONProcessCommandResultError != nil {
-				return encodeJSONProcessCommandResultError
-			}
-
-			_, writeResponseError := w.Write(response)
-			if writeResponseError != nil {
-				log.Fatal(writeResponseError)
-			}
-
-			/*
-				requestStrings := request.(map[string]interface{})
-
-				if project.SCMServiceType == "github" {
-					log.Println(requestStrings["ref"].(string))
-				}
-			*/
-
-			// TODO: execute script and return results
-
-			return nil
-
-			/*
-				result, err := json.Marshal(project)
-				jsonAPIError := getAPIError(err)
-				if jsonAPIError != nil {
-					return jsonAPIError
-				}
-				fmt.Fprintf(w, string(result))
-				return nil
-			*/
-		})))
+		routerAPI.HandleFunc(route, wrapAPIHandler(apiHandler(getApiHandlerProjectSlug(project))))
 	}
 
 	fs := http.FileServer(http.Dir("public"))
@@ -140,6 +68,88 @@ func InitServer(initConfig *adconfiguration.AdConfiguration, adVersion adversion
 	// log.Fatal(http.ListenAndServe(":"+port, r))
 
 	return server
+}
+
+func getApiHandlerVersion(adVersion adversion.AdVersion) func(w http.ResponseWriter, r *http.Request) *APIError {
+
+	return func(w http.ResponseWriter, r *http.Request) *APIError {
+		result, err := json.Marshal(adVersion)
+		jsonAPIError := getAPIError(err)
+		if jsonAPIError != nil {
+			return jsonAPIError
+		}
+		fmt.Fprintf(w, string(result))
+		return nil
+	}
+
+}
+
+func getApiHandlerProjectSlug(project adconfiguration.AdProjectConfiguration) func(w http.ResponseWriter, r *http.Request) *APIError {
+
+	return func(w http.ResponseWriter, r *http.Request) *APIError {
+		var request interface{}
+		// TODO: for a GET request this here is EOF
+		err1 := json.NewDecoder(r.Body).Decode(&request)
+		decodeJSONRequestBodyAPIError := getAPIError(err1)
+		if decodeJSONRequestBodyAPIError != nil {
+			return decodeJSONRequestBodyAPIError
+		}
+
+		log.Println("a")
+
+		s, err2 := json.MarshalIndent(request, "", "\t")
+		encodeJSONRequestBodyAPIError := getAPIError(err2)
+		if encodeJSONRequestBodyAPIError != nil {
+			return encodeJSONRequestBodyAPIError
+		}
+
+		// log.Printf("%+v", *request);
+		log.Println(string(s))
+
+		projectCommand := exec.Command(project.ProjectScript)
+
+		projectCommandResult := ScriptResult{}
+
+		projectCommandOutput, err := projectCommand.Output()
+		if err != nil {
+			projectCommandResult.OutputError = err.Error()
+		} else {
+			projectCommandResult.OutputSuccess = string(projectCommandOutput)
+		}
+
+		response, err3 := json.MarshalIndent(projectCommandResult, "", "\t")
+		encodeJSONProcessCommandResultError := getAPIError(err3)
+		if encodeJSONProcessCommandResultError != nil {
+			return encodeJSONProcessCommandResultError
+		}
+
+		_, writeResponseError := w.Write(response)
+		if writeResponseError != nil {
+			log.Fatal(writeResponseError)
+		}
+
+		/*
+			requestStrings := request.(map[string]interface{})
+
+			if project.SCMServiceType == "github" {
+				log.Println(requestStrings["ref"].(string))
+			}
+		*/
+
+		// TODO: execute script and return results
+
+		return nil
+
+		/*
+			result, err := json.Marshal(project)
+			jsonAPIError := getAPIError(err)
+			if jsonAPIError != nil {
+				return jsonAPIError
+			}
+			fmt.Fprintf(w, string(result))
+			return nil
+		*/
+	}
 }
 
 // Start ...
