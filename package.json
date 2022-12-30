@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/wheresvic/auto-deploy#readme",
   "devDependencies": {
-    "release-it": "12.3.0"
+    "release-it": "15.6.0"
   }
 }
